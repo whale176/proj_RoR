@@ -1,4 +1,4 @@
 # proj_RoR
 
-Ruby project
+Test Gitea commit whether is mapping the issue.
 
