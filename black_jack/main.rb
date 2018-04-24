@@ -1,225 +1,80 @@
-class BlackJackGame
+require "./person"
+require "./deck"
+require "./message"
+
+# Game
+class Game
   def initialize
-    @@card_num_pool = (0..51).to_a
-    @@player = []
-    @@dealer = []
-    @@own_ace = {"dealer" => 0, "player" => 0}
+    @deck = Deck.new
+    @message = Message.new
+    @person = Person.new @deck.pocker_card_pool
   end
 
-  def get_score_player
-    handle_ace_score(@@own_ace["player"], sum_score(@@player))
+  def welcome
+    response_ready = @message.user_input_argv(
+      'Welcome to Black Jack Game. Ready? (Y/N)'
+    )
+    end_of_game if response_ready != 'Y'
   end
 
-  def get_score_dealer
-    handle_ace_score(@@own_ace["dealer"], sum_score(@@dealer))
+  def end_of_game
+    @message.end_of_game
   end
 
-  def handle_ace_score(own_ace, score)
-    if (own_ace != 0)
-      # candidate_score = [score, score + 10]
-      if (score + 10 > 21 || score > score + 10)
-        return score
-      end
-      return score + 10
+  def check_player_stake
+    loop do
+      player_stake = @message.user_input_argv(
+        "Please place your bets. (You have $#{@person.player_money} now)"
+      )
+      break if @person.check_enough_money(player_stake)
     end
-    return score
-  end
-
-  def select_a_card
-    pick_num = @@card_num_pool.sample
-    @@card_num_pool.delete(pick_num)
-    return pick_num
-  end
-
-  def show_all_card(pick_num_array)
-    card_sets = []
-    pick_num_array.each do |pick_num|
-      card_sets.push(transfer_card_type(pick_num) + transfer_card_num(pick_num).to_s)
-    end
-    return card_sets.join(", ")
-  end
-
-  def cal_ace_card(pick_card, person = "dealer")
-    if (pick_card % 13 == 0)
-      (person == "player") ? @@own_ace["player"] = pick_card : @@own_ace["dealer"] = pick_card
-    end
-  end
-
-  def transfer_card_type(pick_num)
-    case pick_num
-    when 0..12
-      return "spade"
-    when 13..25
-      return "heart"
-    when 26..38
-      return "diamond"
-    when 39..51
-      return "club"
-    else
-      return "Error"
-    end
-  end
-
-  def transfer_card_num(pick_num)
-    num = pick_num % 13
-    case num
-    when 0
-      return "A"
-    when 10
-      return "J"
-    when 11
-      return "Q"
-    when 12
-      return "K"
-    else
-      return num + 1
-    end
-  end
-
-  def sum_score(card_set)
-    score = 0
-    ace_score = 0
-    card_set.each do |card|
-      score += transfer_score(card)
-    end
-    return score
-  end
-
-  def check_score_is_over(score)
-    (score > 21) ? true : false
-  end
-
-  def transfer_score(pick_num)
-    num = pick_num % 13
-    case num
-    when 0
-      return 1
-    when 10..12
-      return 10
-    else
-      return num + 1
-    end
-  end
-
-  def each_round_player
-    # 1. select a card
-    @@player.push(select_a_card)
-    # 2. check the score
-    score = get_score_player
-    puts "Player has: " + show_all_card(@@player) + ". Score: #{score}"
-    check_score_is_over(score)
-  end
-
-  def each_round_dealer
-    # 1. select a card
-    @@dealer.push(select_a_card)
-    # 2. check the score
-    score = get_score_dealer
-    puts "Dealer has: " + show_all_card(@@dealer) + ". Score: #{score}"
-    check_score_is_over(score)
   end
 
   def first_round
-    2.times {
-      @@player.push(select_a_card)
-      @@dealer.push(select_a_card)
-    }
-    puts "Player has: " + show_all_card(@@player)
-    puts "Dealer has: " + show_all_card(@@dealer)
-    # 2. check the score
-    check_score_is_over(get_score_player)
-    check_score_is_over(get_score_dealer)
-  end
-
-  def who_is_winner
-    dealer_score = get_score_dealer
-    player_score = get_score_player
-    r = if (player_score > 21)
-          "Dealer"
-        elsif (dealer_score > 21)
-          "Player"
-        elsif (player_score >= dealer_score)
-          "Player"
-        else
-          "Dealer"
-        end
-    puts "=============="
-    puts "#{r} is winner!"
-    puts "=============="
-    return r
-  end
-end
-
-class MoneyManage
-  def initialize
-    @@money_player = 10000
-  end
-
-  def get_player_money
-    @@money_player
-  end
-
-  def check_money_pool(stake)
-    if (!stake.is_a?)
-      puts "Please enter an Integer"
-      return false
-    elsif (@@money_player < stake)
-      puts "Sorry, Player has no enough money. Enter the money again or Press \"N\" to exit. "
-      return false
+    @message.show_round
+    both_num_cards = @person.first_round
+    both_num_cards.each do |who, num_cards|
+      puts "#{who} has: #{@deck.show_all_card(num_cards)}."
     end
-    true
   end
 
-  def cal_award(winner, stake)
-    @@money_player += (winner == "Dealer") ? stake : -stake
+  def score_of_dealer
+    @deck.sum_score(@person.dealer_cards, @person.own_ace['dealer'])
   end
-end
 
-# ================
-# Main code Area
-# ================
+  def score_of_player
+    @deck.sum_score(@person.player_cards, @person.own_ace['player'])
+  end
 
-def input_argv
-  gets.chomp
-end
+  def score_over?(score)
+    score > 21
+  end
 
-puts "Welcome to Black Jack Game. Ready? (Y/N)"
-conti = gets.chomp
-if conti == "Y"
-  momeyobj = MoneyManage.new
-  # enough_money = true
-  # while (enough_money)
-  puts "How much are you in? (You have $#{momeyobj.get_player_money} now)"
-  input_stake = input_argv
-  #   enough_money = momeyobj.check_money_pool(input_stake)
-  # end
-  puts "=========="
-  puts "Round 1"
-  puts "=========="
-  game = BlackJackGame.new
-  game.first_round
-  round = 2
-  until (game.get_score_player > 21 || conti == "N")
-    puts "Player, Do you wannt get a card again? (Y/N)"
-    conti = gets.chomp
-    if conti == "N"
-      break
+  def each_player_round
+    # check player score is over 21 ?
+    loop do
+      resp = @message.user_input_argv(
+        'Player, Do you wannt get a card again? (Y/N)'
+      )
+      break if resp != 'Y' || score_over?(score_of_player)
     end
-    puts "=========="
-    puts "Player Round " + round.to_s
-    puts "=========="
-    game.each_round_player
-    round += 1
   end
-  round = 2
-  until (game.get_score_dealer > 21 || game.get_score_dealer >= game.get_score_player)
-    puts "=========="
-    puts "Dealer Round " + round.to_s
-    puts "=========="
-    game.each_round_dealer
-    round += 1
+
+  def check_player_score
+    show_result if score_over? score_of_player
   end
-  winner = game.who_is_winner
-  momeyobj.cal_award(winner, input_stake.to_i)
+
+  
 end
-puts "Goodbye! Have a nice day!"
+
+game = Game.new
+game.welcome
+game.check_player_stake
+
+# Start first round
+game.first_round
+game.each_player_round
+
+# Each round
+
+game.end_of_game
