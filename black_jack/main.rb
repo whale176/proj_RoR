@@ -32,9 +32,19 @@ class Game
 
   def first_round
     @message.show_round
-    both_num_cards = @person.first_round
-    both_num_cards.each do |who, num_cards|
-      puts "#{who} has: #{@deck.show_all_card(num_cards)}."
+    @person.first_round
+    puts "Player has: #{@deck.show_all_card(@person.player_cards)}."
+    puts "Dealer has: #{@deck.show_all_card(@person.dealer_cards)}."
+  end
+
+  def rest_round(who = 'player')
+    @message.show_round
+    if who == 'player'
+      @person.player_select_a_card
+      puts "Player has: #{@deck.show_all_card(@person.player_cards)}."
+    else
+      @person.dealer_select_a_card
+      puts "Dealer has: #{@deck.show_all_card(@person.dealer_cards)}."
     end
   end
 
@@ -51,30 +61,40 @@ class Game
   end
 
   def each_player_round
-    # check player score is over 21 ?
     loop do
       resp = @message.user_input_argv(
         'Player, Do you wannt get a card again? (Y/N)'
       )
-      break if resp != 'Y' || score_over?(score_of_player)
+      break if resp != 'Y'
+      rest_round
+      break if score_over?(score_of_player)
     end
+    check_player_score
+  end
+
+  def each_dealer_round
+    loop do
+      break if score_over?(score_of_dealer) || score_of_dealer >= score_of_player
+      rest_round 'dealer'
+    end
+    check_final_score
   end
 
   def check_player_score
-    show_result if score_over? score_of_player
+    @message.player_is_lost? true if score_over? score_of_player
   end
 
-  
+  def check_final_score
+    @message.player_is_lost? !(score_over?(score_of_dealer) || score_of_dealer < score_of_player)
+  end
 end
 
 game = Game.new
-game.welcome
 game.check_player_stake
 
-# Start first round
 game.first_round
-game.each_player_round
+game_is_end = game.each_player_round
+game.end_of_game if game_is_end
 
-# Each round
-
+game.each_dealer_round
 game.end_of_game

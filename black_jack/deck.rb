@@ -65,12 +65,7 @@ class Deck
     card_set.each do |card|
       score += transfer_score(card)
     end
-    ace_cards != 0 && (score + 10 <= 21 || score < score + 10) ? score + 10 : score
-  end
-
-  def show_result(is_player_win = false)
-    result = is_player_win ? 'Winner' : 'Loser'
-    puts "Game is over! Player is the #{result}"
+    ace_cards != 0 && (score + 10 <= 21) ? score + 10 : score
   end
 
   def hit_or_stand

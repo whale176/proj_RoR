@@ -30,19 +30,19 @@ class Person
   end
 
   def ace_card?(pick_card)
-    (pick_card % 13).zero
+    (pick_card % 13).zero?
   end
 
   def player_select_a_card
-    pick_card = @player_cards.push(select_a_card)
-    @own_ace['player'] += 1 if ace_card?
-    pick_card
+    selected_a_card = select_a_card
+    @own_ace['player'] += 1 if ace_card?(selected_a_card)
+    @player_cards.push(selected_a_card)
   end
 
   def dealer_select_a_card
-    pick_card = @dealer_cards.push(select_a_card)
-    @own_ace['dealer'] += 1 if ace_card?
-    pick_card
+    selected_a_card = select_a_card
+    @own_ace['dealer'] += 1 if ace_card?(selected_a_card)    
+    @dealer_cards.push(selected_a_card)
   end
 
   def first_round
@@ -51,6 +51,7 @@ class Person
       dealer_select_a_card
     end
   end
+
 
   def cal_score(ace_cards, score)
     ace_cards != 0 && (score + 10 <= 21 || score < score + 10) ? score + 10 : score

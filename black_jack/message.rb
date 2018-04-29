@@ -25,18 +25,9 @@ class Message
     puts "#{who} has: #{card_set}"
   end
 
-  def 
-
-  # until (game.get_score_player > 21 || conti == "N")
-  #   puts "Player, Do you wannt get a card again? (Y/N)"
-  #   conti = gets.chomp
-  #   if conti == "N"
-  #     break
-  #   end
-  #   puts "=========="
-  #   puts "Player Round " + round.to_s
-  #   puts "=========="
-  #   game.each_round_player
-  #   round += 1
-  # end
+  def player_is_lost?(result = true)
+    string = result ? 'Loses' : 'Wins'
+    puts "Game is over! Player #{string}!"
+    result
+  end
 end
