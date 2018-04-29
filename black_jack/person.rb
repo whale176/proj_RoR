@@ -4,12 +4,18 @@ class Person
   attr_reader :player_cards
   attr_reader :dealer_cards
   attr_reader :own_ace
-  def initialize(deck, player_money = 30_000)
+  def initialize(deck)
     @player_cards = []
     @dealer_cards = []
-    # @own_cards = { 'player' => [], 'dealer' => []}
     @pocker_card_pool = deck
-    @player_money = player_money
+    @player_money = 30_000
+    @own_ace = { 'dealer' => 0, 'player' => 0 }
+  end
+
+  def renew_cards(deck)
+    @pocker_card_pool = deck
+    @player_cards = []
+    @dealer_cards = []
     @own_ace = { 'dealer' => 0, 'player' => 0 }
   end
 
@@ -52,12 +58,12 @@ class Person
     end
   end
 
-
   def cal_score(ace_cards, score)
     ace_cards != 0 && (score + 10 <= 21 || score < score + 10) ? score + 10 : score
   end
 
   def cal_player_money(stake, is_player_win)
+    stake = stake.to_i
     @player_money += is_player_win ? stake : -stake
   end
 end

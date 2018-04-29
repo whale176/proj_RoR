@@ -4,14 +4,13 @@ class Message
     @round = 1
   end
 
-  def user_input_argv(hint_message = nil)
-    puts hint_message if hint_message
-    gets.chomp
+  def renew_round
+    @round = 1
   end
 
-  def end_of_game
-    puts 'Goodbye! Have a nice day!'
-    exit
+  def user_input_argv(hint_message = nil)
+    puts hint_message if hint_message
+    gets.chomp.upcase
   end
 
   def show_round

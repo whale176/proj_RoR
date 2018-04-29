@@ -6,6 +6,10 @@ class Deck
     @pocker_card_pool = (0..51).to_a
   end
 
+  def renew_deck
+    @pocker_card_pool = (0..51).to_a
+  end
+
   def transfer_card_type(pick_num)
     case pick_num
     when 0..12
@@ -66,9 +70,5 @@ class Deck
       score += transfer_score(card)
     end
     ace_cards != 0 && (score + 10 <= 21) ? score + 10 : score
-  end
-
-  def hit_or_stand
-    puts 'Player, Do you wannt get a card again? (Y/N)'
   end
 end
